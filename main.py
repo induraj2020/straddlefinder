@@ -120,9 +120,9 @@ if own_file_main and nifty_filename_week and nifty_filename_month and bank_filen
     output.seek(0)
 
     st.download_button( label="Download Processed File", data=output, file_name="Share-option chain analysis-new-final.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-    st.dataframe(final_df_1)
-    st.dataframe(final_df_2)
-    st.dataframe(final_df_3)
-    st.dataframe(final_df_4)
+    st.dataframe(final_df_1, height=200)
+    st.dataframe(final_df_2,height=200)
+    st.dataframe(final_df_3,height=200)
+    st.dataframe(final_df_4,height=200)
 else:
     st.warning("Please upload all files and enter required values.")
