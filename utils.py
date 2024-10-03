@@ -22,13 +22,16 @@ from openpyxl.styles import Font
 pd.set_option('display.max_rows', 5000)
 pd.set_option('display.max_columns', 1000)
 from openpyxl import load_workbook
-# from utils import *
-from io import BytesIO
 
-def call_straddle_finder(file_loc, s_df, filename, sheet_name, spot_price):
+def call_straddle_finder(file_loc, filename, sheet_name, spot_price):
+    print('**********************')
+    print(file_loc)
+    print(filename)
+    print('**********************')
     spot = spot_price
-    df_excel = file_loc
-    df = s_df
+    print(file_loc)
+    df_excel = pd.read_excel(file_loc, sheet_name=sheet_name)
+    df = pd.read_csv('{}'.format(filename))
     date_pattern = r'(\d{1,2})_(\d{1,2})_(\d{4})'
     match = re.search(date_pattern, filename)
     if match:
@@ -77,49 +80,9 @@ def call_straddle_finder(file_loc, s_df, filename, sheet_name, spot_price):
     
     new = pd.DataFrame(dic)
     df_excel = pd.concat([df_excel, new], ignore_index=True)
+    
+    book = load_workbook(file_loc)
+    with pd.ExcelWriter(file_loc, engine='openpyxl', mode='a', if_sheet_exists='overlay') as writer:
+        df_excel.to_excel(writer, sheet_name=sheet_name, index=False)
 
     return df_excel
-
-
-# Title
-st.title("Straddle Finder")
-
-# Integer inputs for Nifty and Bank spot values
-nifty_spot = st.number_input("Enter Nifty Spot value:", min_value=0, value=10000)
-bank_spot = st.number_input("Enter Bank Spot value:", min_value=0, value=25000)
-
-#upload own file
-own_file_main = st.file_uploader("Upload Main file", type=["csv", "xlsx"])
-nifty_filename_week = st.file_uploader("Upload Nifty Weekly Data", type=["csv", "xlsx"])
-nifty_filename_month = st.file_uploader("Upload Nifty Monthly Data", type=["csv", "xlsx"])
-bank_filename_week = st.file_uploader("Upload Bank Weekly Data", type=["csv", "xlsx"])
-bank_filename_month = st.file_uploader("Upload Bank Monthly Data", type=["csv", "xlsx"])
-
-# Check if all required inputs are provided
-if own_file_main and nifty_filename_week and nifty_filename_month and bank_filename_week and bank_filename_month:
-    own_file_main_df1 = pd.read_excel(own_file_main, sheet_name="Nifty-W" )
-    own_file_main_df2 =  pd.read_excel(own_file_main, sheet_name="Nifty-M" )
-    own_file_main_df3 =  pd.read_excel(own_file_main, sheet_name="Bank-W" )
-    own_file_main_df4 =  pd.read_excel(own_file_main, sheet_name="Bank-M" )
-
-    nifty_filename_week_df = pd.read_csv(nifty_filename_week)
-    nifty_filename_month_df = pd.read_csv(nifty_filename_month)
-    bank_filename_week_df = pd.read_csv(bank_filename_week)
-    bank_filename_month_df = pd.read_csv(bank_filename_month)
-
-    final_df_1 = call_straddle_finder(own_file_main_df1, nifty_filename_week_df,  nifty_filename_week.name, 'Nifty-W' , nifty_spot)
-    final_df_2 = call_straddle_finder(own_file_main_df2, nifty_filename_month_df,  nifty_filename_month.name, 'Nifty-M' , nifty_spot)
-    final_df_3 = call_straddle_finder(own_file_main_df3, bank_filename_week_df,  bank_filename_week.name, 'Bank-W' , bank_spot)
-    final_df_4 = call_straddle_finder(own_file_main_df4, bank_filename_month_df, bank_filename_month.name, 'Bank-M' , bank_spot)
-
-    output = io.BytesIO()
-    with pd.ExcelWriter(output, engine='openpyxl') as writer:
-        final_df_1.to_excel(writer, sheet_name='Nifty-W', index=False)
-        final_df_2.to_excel(writer, sheet_name='Nifty-M', index=False)
-        final_df_3.to_excel(writer, sheet_name='Bank-W', index=False)
-        final_df_4.to_excel(writer, sheet_name='Bank-M', index=False)
-    output.seek(0)
-
-    st.download_button( label="Download Processed File", data=output, file_name="Share-option chain analysis-new-final.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-else:
-    st.warning("Please upload all files and enter required values.")
