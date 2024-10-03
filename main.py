@@ -57,6 +57,7 @@ def call_straddle_finder(file_loc, s_df, filename, sheet_name, spot_price):
     final_df = convert_cols(df, ['CALL_OI', 'PUT_OI', 'CALL_VAR','PUT_VAR'])
     final_df = final_df.sort_values(['PUT_VAR','CALL_VAR'], ascending=[False,False]).reset_index(drop=True)
     final_df = final_df[(final_df['PUT_VAR']>10)& (final_df['CALL_VAR']>10)]
+    st.dataframe(final_df, height=300)
     if sheet_name.startswith('Bank'):
         final_df = final_df[(final_df['Strike Price'] % 500 == 0)]
     elif sheet_name.startswith('Nifty'):
@@ -120,14 +121,5 @@ if own_file_main and nifty_filename_week and nifty_filename_month and bank_filen
     output.seek(0)
 
     st.download_button( label="Download Processed File", data=output, file_name="Share-option chain analysis-new-final.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-    st.header("Nifty-Weekly")
-    st.dataframe(final_df_1, height=500)
-    st.dataframe(final_df_1[['CALL_OI','CALL_LTP','Strike Price','PUT_LTP','PUT_OI','CALL_VAR','PUT_VAR']], height=500)
-    st.header("Nifty-Monthly")
-    st.dataframe(final_df_2[['CALL_OI','CALL_LTP','Strike Price','PUT_LTP','PUT_OI','CALL_VAR','PUT_VAR']],height=500)
-    st.header("Bank-Weekly")
-    st.dataframe(final_df_3[['CALL_OI','CALL_LTP','Strike Price','PUT_LTP','PUT_OI','CALL_VAR','PUT_VAR']],height=500)
-    st.header("Bank-Monthly")
-    st.dataframe(final_df_4[['CALL_OI','CALL_LTP','Strike Price','PUT_LTP','PUT_OI','CALL_VAR','PUT_VAR']],height=500)
 else:
     st.warning("Please upload all files and enter required values.")
