@@ -92,34 +92,28 @@ bank_spot = st.number_input("Enter Bank Spot value:", min_value=0, value=25000)
 own_file_main = st.file_uploader("Upload Main file", type=["csv", "xlsx"])
 nifty_filename_week = st.file_uploader("Upload Nifty Weekly Data", type=["csv", "xlsx"])
 nifty_filename_month = st.file_uploader("Upload Nifty Monthly Data", type=["csv", "xlsx"])
-bank_filename_week = st.file_uploader("Upload Bank Weekly Data", type=["csv", "xlsx"])
 bank_filename_month = st.file_uploader("Upload Bank Monthly Data", type=["csv", "xlsx"])
 
 # Check if all required inputs are provided
-if own_file_main and nifty_filename_week and nifty_filename_month and bank_filename_week and bank_filename_month:
+if own_file_main and nifty_filename_week and nifty_filename_month and bank_filename_month:
     own_file_main_df1 = pd.read_excel(own_file_main, sheet_name="Nifty-W" )
     own_file_main_df2 =  pd.read_excel(own_file_main, sheet_name="Nifty-M" )
-    own_file_main_df3 =  pd.read_excel(own_file_main, sheet_name="Bank-W" )
     own_file_main_df4 =  pd.read_excel(own_file_main, sheet_name="Bank-M" )
 
     nifty_filename_week_df = pd.read_csv(nifty_filename_week)
     nifty_filename_month_df = pd.read_csv(nifty_filename_month)
-    bank_filename_week_df = pd.read_csv(bank_filename_week)
     bank_filename_month_df = pd.read_csv(bank_filename_month)
 
     final_df_1 = call_straddle_finder(own_file_main_df1, nifty_filename_week_df,  nifty_filename_week.name, 'Nifty-W' , nifty_spot)
     final_df_2 = call_straddle_finder(own_file_main_df2, nifty_filename_month_df,  nifty_filename_month.name, 'Nifty-M' , nifty_spot)
-    final_df_3 = call_straddle_finder(own_file_main_df3, bank_filename_week_df,  bank_filename_week.name, 'Bank-W' , bank_spot)
     final_df_4 = call_straddle_finder(own_file_main_df4, bank_filename_month_df, bank_filename_month.name, 'Bank-M' , bank_spot)
 
     output = io.BytesIO()
     with pd.ExcelWriter(output, engine='openpyxl') as writer:
         final_df_1.to_excel(writer, sheet_name='Nifty-W', index=False)
         final_df_2.to_excel(writer, sheet_name='Nifty-M', index=False)
-        final_df_3.to_excel(writer, sheet_name='Bank-W', index=False)
         final_df_4.to_excel(writer, sheet_name='Bank-M', index=False)
     output.seek(0)
-
     st.download_button( label="Download Processed File", data=output, file_name="Share-option chain analysis-new-final.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 else:
     st.warning("Please upload all files and enter required values.")
